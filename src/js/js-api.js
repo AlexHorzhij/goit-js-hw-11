@@ -24,7 +24,6 @@ export default class NewApiForFetch{
             
         if (response.data.total === 0) {
             Notify.failure("Sorry, there are no images matching your search query. Please try again.")
-            
         }
             return response
         } catch (error) {
@@ -43,3 +42,11 @@ export default class NewApiForFetch{
     }
     
 }
+
+Notify.init({
+    width: '700px',
+    fontSize: '30px',
+    borderRadius: '10px',
+    position: 'center-top',
+    fontAwesomeIconSize: '64px',
+});

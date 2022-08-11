@@ -2,13 +2,12 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 import NewApiForFetch from './js/js-api';
 
-const newFetchApi = new NewApiForFetch()
-console.log(newFetchApi)
+import SimpleLightbox from "simplelightbox";
+import "simplelightbox/dist/simple-lightbox.min.css";
 
-// // Описаний в документації
-// import SimpleLightbox from "simplelightbox";
-// // Додатковий імпорт стилів
-// import "simplelightbox/dist/simple-lightbox.min.css";
+const lightbox = new SimpleLightbox('.gallery a', { captionsData: 'alt', });
+
+const newFetchApi = new NewApiForFetch()
 
 const refs = {
     form: document.querySelector('.search-form'),
@@ -23,21 +22,19 @@ refs.form.addEventListener('submit', onSubmit)
 refs.loadBtn.addEventListener('click', loadMore)
 
 function loadMore() {
-    newFetchApi.query = refs.input.value.trim()
     newFetchApi.goFetch().then((data) => {
         const respArr = data.data.hits
         markupCards(respArr)
         console.log(newFetchApi.page)
 
-        if (data.data.totalHits < newFetchApi.page) {
-            hideLoadBtn()
-        }
-    })
-}
+        const pageCount = Math.ceil(data.data.totalHits / 40)
+        const currentPage = newFetchApi.page
 
-function hideLoadBtn() {
-    refs.loadBtn.classList.add('is-hidden')
-    Notify.failure("We're sorry, but you've reached the end of search results.")
+        if (pageCount < currentPage) {
+            refs.loadBtn.classList.add('is-hidden')
+            Notify.info("We're sorry, but you've reached the end of search results.")
+        }
+    }).catch(error => console.log("error"))
 }
 
 function onSubmit(e) {
@@ -48,20 +45,26 @@ function onSubmit(e) {
 
     newFetchApi.query = refs.input.value.trim()
     newFetchApi.goFetch().then((data) => {
-        Notify.info(`Hooray! We found ${data.data.totalHits} images.`);
-        console.log(data)
+        Notify.success(`Hooray! We found ${data.data.totalHits} images.`);
+
         const respArr = data.data.hits
+        const pageCount = Math.ceil(data.data.totalHits / 40)
+        const currentPage = newFetchApi.page
+
+        if (pageCount >= currentPage) {
+            refs.loadBtn.classList.remove('is-hidden')
+        }
+
         markupCards(respArr)
-    }).catch(error => console.log("error"))
-    refs.loadBtn.classList.remove('is-hidden')
+    }).catch(error => console.log(error))
 }
 
 function markupCards(dataArr) {
-        const markup = dataArr.reduce((acc, item) => {return acc +
-        `<a href="${item.largeImageURL}">
+    const markup = dataArr.reduce((acc, item) => {return acc +
+    `<a href=${item.largeImageURL}>
         <div class="photo-card">
         <div class="thumb">
-             <img src="${item.webformatURL}" alt="${item.tags}" loading="lazy" />
+            <img src=${item.webformatURL} alt=${item.tags} loading="lazy" />
         </div>
         <div class="info">
             <p class="info-item">
@@ -77,14 +80,30 @@ function markupCards(dataArr) {
             <b>Downloads</b> ${item.downloads}
             </p>
         </div>
-        </div></a>`
-    }, "")
+        </div>
+    </a>`
+}, "")
     refs.gallery.insertAdjacentHTML("beforeend", markup)
-    // refresh()
 }
 
 
+Notify.init({
+    width: '700px',
+    fontSize: '30px',
+    borderRadius: '10px',
+    position: 'center-top',
+    fontAwesomeIconSize: '64px',
+});
 
 
-// var lightbox = new SimpleLightbox('.gallery a', { captionsData: 'alt', });
+// function hideLoadBtn() {
+//     const pageCount = data.data.totalHits / 40
+//     const currentPage = newFetchApi.page
 
+//             if ( pageCount < currentPage) {
+            
+//         }
+
+//     refs.loadBtn.classList.add('is-hidden')
+//     Notify.failure("We're sorry, but you've reached the end of search results.")
+// }
