@@ -13,7 +13,7 @@ input{
     height: 40px;
     border-radius: 5px;
 }
-button{
+.search-btn{
     font-weight: 600;
     background-color: #93a0e6;
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 1px 1px rgba(0, 0, 0, 0.14), 0px 2px 1px rgba(0, 0, 0, 0.2);
@@ -71,4 +71,20 @@ a{
 }
 b{
     margin-bottom: 5px;
+}
+
+.load-more{
+    font-size: 20px;
+    color: white;
+    display: block;
+    background-color: #778afd;
+    padding: 10px 20px;
+    margin: 20px auto;
+    border-radius: 5px;
+}
+
+.is-hidden{
+    visibility: hidden;
+    opacity: 1;
+    display: none;
 }

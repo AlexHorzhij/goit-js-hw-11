@@ -1,15 +1,14 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-const axios = require('axios').default;
 
-// Описаний в документації
-import SimpleLightbox from "simplelightbox";
-// Додатковий імпорт стилів
-import "simplelightbox/dist/simple-lightbox.min.css";
+import NewApiForFetch from './js/js-api';
 
-const lightbox = new SimpleLightbox('.gallery a', { captionsData: 'alt', });
+const newFetchApi = new NewApiForFetch()
+console.log(newFetchApi)
 
-
-const URL = `https://pixabay.com/api/`
+// // Описаний в документації
+// import SimpleLightbox from "simplelightbox";
+// // Додатковий імпорт стилів
+// import "simplelightbox/dist/simple-lightbox.min.css";
 
 const refs = {
     form: document.querySelector('.search-form'),
@@ -17,33 +16,45 @@ const refs = {
     subBtn: document.querySelector('.search-btn'),
     gallery: document.querySelector('.gallery'),
     loadBtn: document.querySelector('.load-more'),
+    btnDiv: document.querySelector('.btn-div')
 }
 
-const searchParam = new URLSearchParams({
-    key: "29157383-7b7a3db408c81f6fc8c1e0e94",
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: 'true',
-    per_page: '40'
-})
-
 refs.form.addEventListener('submit', onSubmit)
+refs.loadBtn.addEventListener('click', loadMore)
+
+function loadMore() {
+    newFetchApi.query = refs.input.value.trim()
+    newFetchApi.goFetch().then((data) => {
+        const respArr = data.data.hits
+        markupCards(respArr)
+        console.log(newFetchApi.page)
+
+        if (data.data.totalHits < newFetchApi.page) {
+            hideLoadBtn()
+        }
+    })
+}
+
+function hideLoadBtn() {
+    refs.loadBtn.classList.add('is-hidden')
+    Notify.failure("We're sorry, but you've reached the end of search results.")
+}
 
 function onSubmit(e) {
     e.preventDefault()
     refs.gallery.innerHTML = ""
+    refs.loadBtn.classList.add('is-hidden')
+    newFetchApi.resetPage()
 
-    const search = refs.input.value.trim()
-    goFetch(search).then((data) => {
+    newFetchApi.query = refs.input.value.trim()
+    newFetchApi.goFetch().then((data) => {
+        Notify.info(`Hooray! We found ${data.data.totalHits} images.`);
+        console.log(data)
         const respArr = data.data.hits
-        console.log(respArr)
         markupCards(respArr)
-    })
+    }).catch(error => console.log("error"))
+    refs.loadBtn.classList.remove('is-hidden')
 }
-
-// function loadMore() {
-    
-// }
 
 function markupCards(dataArr) {
         const markup = dataArr.reduce((acc, item) => {return acc +
@@ -69,21 +80,11 @@ function markupCards(dataArr) {
         </div></a>`
     }, "")
     refs.gallery.insertAdjacentHTML("beforeend", markup)
-    
     // refresh()
 }
 
-async function goFetch(search) {
 
-    let page = 1
-    try {
-        const response = await axios.get(`${URL}?q=${search}&${searchParam}&page=${page}`)
-        if (response.data.total === 0) {
-            Notify.failure("Sorry, there are no images matching your search query. Please try again.")
-        }
-        return response
-    } catch (error) {
-        console.error(error);
-    }
-}
+
+
+// var lightbox = new SimpleLightbox('.gallery a', { captionsData: 'alt', });
 
